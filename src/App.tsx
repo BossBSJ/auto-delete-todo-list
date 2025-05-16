@@ -1,35 +1,114 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useRef, useState } from "react";
+import "./App.css";
+import { CategoryColumn } from "./components/category-column";
+import type { List } from "./types/list";
+
+const INITIAL_ITEMS: List[] = [
+  {
+    type: "Fruit",
+    name: "Apple",
+  },
+  {
+    type: "Vegetable",
+    name: "Broccoli",
+  },
+  {
+    type: "Vegetable",
+    name: "Mushroom",
+  },
+  {
+    type: "Fruit",
+    name: "Banana",
+  },
+  {
+    type: "Vegetable",
+    name: "Tomato",
+  },
+  {
+    type: "Fruit",
+    name: "Orange",
+  },
+  {
+    type: "Fruit",
+    name: "Mango",
+  },
+  {
+    type: "Fruit",
+    name: "Pineapple",
+  },
+  {
+    type: "Vegetable",
+    name: "Cucumber",
+  },
+  {
+    type: "Fruit",
+    name: "Watermelon",
+  },
+  {
+    type: "Vegetable",
+    name: "Carrot",
+  },
+];
+
+// ----------------------------------------------------------------------
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [lists, setLists] = useState<List[]>(INITIAL_ITEMS);
+
+  const [fruits, setFruits] = useState<List[]>([]);
+  const [vegetables, setVegetables] = useState<List[]>([]);
+
+  // ----------------------------------------------------------------------
+
+  const timeouts = useRef<Record<string, number>>({});
+
+  // ----------------------------------------------------------------------
+
+  const handleClickItem = (list: List) => {
+    setLists((prevState) =>
+      prevState.filter((item) => item.name !== list.name)
+    );
+    if (list.type === "Fruit") setFruits((prevState) => [...prevState, list]);
+    else setVegetables((prevState) => [...prevState, list]);
+
+    timeouts.current[list.name] = setTimeout(() => {
+      handleClickReturnToList(list);
+    }, 5000);
+  };
+
+  const handleClickReturnToList = (list: List) => {
+    clearTimeout(timeouts.current[list.name]);
+
+    setLists((prevState) => [...prevState, list]);
+    if (list.type === "Fruit")
+      setFruits((prevState) =>
+        prevState.filter((item) => item.name !== list.name)
+      );
+    else
+      setVegetables((prevState) =>
+        prevState.filter((item) => item.name !== list.name)
+      );
+  };
+
+  // ----------------------------------------------------------------------
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="container">
+        <CategoryColumn lists={lists} onClick={handleClickItem} />
+        <CategoryColumn
+          title="Fruit"
+          lists={fruits}
+          onClick={handleClickReturnToList}
+        />
+        <CategoryColumn
+          title="Vegetable"
+          lists={vegetables}
+          onClick={handleClickReturnToList}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
